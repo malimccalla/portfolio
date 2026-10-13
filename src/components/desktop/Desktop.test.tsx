@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { interests, windowDefinitions } from "../../data/portfolio";
+import { apps, windowDefinitions } from "../../data/portfolio";
 import Desktop from "./Desktop";
 
 let changeViewport: (matches: boolean) => void;
@@ -216,27 +216,31 @@ describe("portfolio desktop", () => {
 		expect(icon).not.toHaveClass("is-selected");
 	});
 
-	it("opens, minimizes, and restores interest apps from the dock", () => {
+	it("opens, minimizes, and restores dock applications", () => {
 		render(<Desktop />);
-		const apps = within(screen.getByRole("navigation", { name: "Interests" }));
-		expect(apps.getAllByRole("button")).toHaveLength(interests.length);
-		const [first] = interests;
-		fireEvent.click(apps.getByRole("button", { name: `Open ${first.title}` }));
+		const dockApps = within(
+			screen.getByRole("navigation", { name: "Applications" }),
+		);
+		expect(dockApps.getAllByRole("button")).toHaveLength(apps.length);
+		const [first] = apps;
+		fireEvent.click(
+			dockApps.getByRole("button", { name: `Open ${first.title}` }),
+		);
 		const window = screen.getByRole("dialog", { name: first.title });
 		expect(within(window).getByText(first.summary)).toBeVisible();
 		expect(dock().queryByRole("button")).not.toBeInTheDocument();
 		fireEvent.click(
-			apps.getByRole("button", { name: `Minimize ${first.title}` }),
+			dockApps.getByRole("button", { name: `Minimize ${first.title}` }),
 		);
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		fireEvent.click(
-			apps.getByRole("button", { name: `Restore ${first.title}` }),
+			dockApps.getByRole("button", { name: `Restore ${first.title}` }),
 		);
 		fireEvent.click(
 			screen.getByRole("button", { name: `Close ${first.title}` }),
 		);
 		expect(
-			apps.getByRole("button", { name: `Open ${first.title}` }),
+			dockApps.getByRole("button", { name: `Open ${first.title}` }),
 		).toHaveFocus();
 	});
 

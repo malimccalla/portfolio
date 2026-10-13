@@ -32,7 +32,17 @@ The scaffold uses TypeScript 7.0, which the current `astro check` command does n
 
 - **`src/data/portfolio.ts`**: replace `[Your name]`, the description, role, GitHub and LinkedIn usernames, and `your.name@example.com`. These are explicitly placeholders, not personal claims.
 - **`src/components/desktop/WindowContent.tsx`**: replace bracketed biography, focus areas, learning, experience, certification, and contact details. Remove entries that do not apply. No employment or credentials are claimed.
-- **Dock interests**: the four dock apps are placeholders for interests outside of work. Edit `interests` in `src/data/portfolio.ts` (title, glyph, gradient colours, summary); the interest window content lives in `WindowContent.tsx`. New glyphs can be added to `Glyph` in `src/components/desktop/Icon.tsx`.
+- **Dock applications**: edit `apps` in `src/data/portfolio.ts`. Each entry needs a `title`, `category`, `summary`, and `colors`; the window body lives in `WindowContent.tsx`.
+
+  Icons go in `public/dock/` and are referenced from the site root, so `public/dock/figma.webp` is `icon: "/dock/figma.webp"`. SVG is preferred; raster files should be at least 128px. Use lowercase, hyphenated names with the file's real extension.
+
+  Set `tile: true` for a bare logo on a transparent background: it is inset on a rounded tile using the entry's `colors`, matching the macOS dock. Leave `tile` unset for icons that already include their own rounded-square background.
+
+  A non-square logo is fine: the tile is always square and the logo is centred inside it. Icons must, however, fill their canvas edge to edge, or they render smaller than their neighbours. Check with `magick <file> -format "%wx%h %@\n" info:`, and crop any built-in margin: adjust the `viewBox` of an SVG (as done for `iterm2.svg`, whose source carried a drop-shadow margin), or `magick <file> -trim +repage <file>` for a raster.
+
+  An entry with no `icon` falls back to the built-in `glyph` shapes in `src/components/desktop/Icon.tsx`, which is useful for an app whose logo you have not added yet.
+
+  App icons are trademarks of their owners. Prefer official brand assets where a company publishes them.
 - **Wallpaper**: the desktop background is the `--wallpaper` colour in `src/styles/global.css`. Swap it for a `background-image` on `.desktop` in `src/styles/desktop.css` when you have an image.
 - **Projects and write-ups**: replace the sample data in `src/data/portfolio.ts`. Each card shows a title, summary, tools, security concepts, and a disabled link placeholder. Add an entry's optional `href` when a real URL is available; it becomes a working link automatically.
 - **Resume**: place your actual PDF at `public/resume.pdf`, or set another URL in `profile.resume`, then set `profile.resumeReady` to `true`. Until then the primary resume action is intentionally disabled rather than linking to a missing file.

@@ -1,5 +1,5 @@
 import {
-	interests,
+	apps,
 	type PortfolioEntry,
 	profile,
 	projects,
@@ -83,24 +83,24 @@ export default function WindowContent({
 	id: WindowId;
 	onOpen: (id: WindowId) => void;
 }) {
-	const interest = interests.find((app) => app.id === id);
-	if (interest) {
+	const dockApp = apps.find((app) => app.id === id);
+	if (dockApp) {
 		return (
 			<>
 				<PlaceholderNotice />
 				<div className="interest-heading">
 					<span className="interest-icon">
-						<AppIcon app={interest} />
+						<AppIcon app={dockApp} />
 					</span>
 					<div>
-						<span className="eyebrow">OUTSIDE OF WORK</span>
-						<h3>{interest.title}</h3>
+						<span className="eyebrow">{dockApp.category}</span>
+						<h3>{dockApp.title}</h3>
 					</div>
 				</div>
-				<p className="lead">{interest.summary}</p>
+				<p className="lead">{dockApp.summary}</p>
 				<p>
-					[This app is a placeholder. Fill it with photos, links, playlists, or
-					anything else that shows this side of you.]
+					[Replace this with why this app matters to your work or your day:
+					configuration, workflows, or what you have built with it.]
 				</p>
 			</>
 		);

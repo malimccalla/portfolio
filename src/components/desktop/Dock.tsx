@@ -1,6 +1,6 @@
 import { type ReactNode, useRef } from "react";
 import {
-	interests,
+	apps,
 	type WindowDefinition,
 	type WindowId,
 	windowDefinitions,
@@ -116,8 +116,8 @@ export default function Dock({ windows, active, onSelect }: Props) {
 				}}
 				onPointerLeave={() => magnify()}
 			>
-				<nav className="dock-section" aria-label="Interests">
-					{interests.map((app) => (
+				<nav className="dock-section" aria-label="Applications">
+					{apps.map((app) => (
 						<DockItem
 							key={app.id}
 							id={`dock-${app.id}`}

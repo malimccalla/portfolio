@@ -1,5 +1,5 @@
 import { useId } from "react";
-import type { AppGlyph, IconKind, InterestApp } from "../../data/portfolio";
+import type { AppGlyph, DockApp, IconKind } from "../../data/portfolio";
 
 export default function Icon({ kind }: { kind: IconKind }) {
 	const uid = useId();
@@ -129,8 +129,24 @@ function Glyph({ glyph }: { glyph: AppGlyph }) {
 	}
 }
 
-export function AppIcon({ app }: { app: InterestApp }) {
+export function AppIcon({ app }: { app: DockApp }) {
 	const gradientId = `app-${useId()}`;
+	if (app.icon) {
+		return (
+			<img
+				src={app.icon}
+				alt=""
+				className={`app-icon ${app.tile ? "has-tile" : ""}`}
+				style={
+					app.tile
+						? {
+								background: `linear-gradient(${app.colors[0]}, ${app.colors[1]})`,
+							}
+						: undefined
+				}
+			/>
+		);
+	}
 	return (
 		<svg viewBox="0 0 60 60" aria-hidden="true" className="app-icon">
 			<defs>
@@ -157,7 +173,7 @@ export function AppIcon({ app }: { app: InterestApp }) {
 				stroke="#fff"
 				strokeOpacity=".22"
 			/>
-			<Glyph glyph={app.glyph} />
+			{app.glyph && <Glyph glyph={app.glyph} />}
 		</svg>
 	);
 }

@@ -1,9 +1,5 @@
 import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
-import {
-	interests,
-	type WindowId,
-	windowDefinitions,
-} from "../../data/portfolio";
+import { apps, type WindowId, windowDefinitions } from "../../data/portfolio";
 import DesktopIcon from "./DesktopIcon";
 import DesktopWindow from "./DesktopWindow";
 import Dock from "./Dock";
@@ -16,16 +12,16 @@ import {
 } from "./windowManager";
 import "../../styles/desktop.css";
 
-const applications = [
+const windowApplications = [
 	...windowDefinitions.map((definition) => ({
 		id: definition.id,
 		title: definition.title,
 		subtitle: definition.description,
 	})),
-	...interests.map((app) => ({
+	...apps.map((app) => ({
 		id: app.id,
 		title: app.title,
-		subtitle: "Outside of work",
+		subtitle: app.category,
 	})),
 ];
 
@@ -36,7 +32,9 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 	const root = useRef<HTMLElement>(null);
 	const focusTarget = useRef<string | undefined>(undefined);
 	const active = focusedWindow(windows);
-	const activeTitle = applications.find((app) => app.id === active)?.title;
+	const activeTitle = windowApplications.find(
+		(app) => app.id === active,
+	)?.title;
 
 	useEffect(() => {
 		const query = matchMedia(
@@ -133,7 +131,7 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 					</nav>
 				</div>
 				<div className="window-layer">
-					{applications.map((app, position) => {
+					{windowApplications.map((app, position) => {
 						const index = windows.findIndex((window) => window.id === app.id);
 						const window = windows[index];
 						if (!window) return null;

@@ -75,49 +75,67 @@ export const windowDefinitions: readonly WindowDefinition[] = [
 
 export type AppGlyph = "music" | "camera" | "gamepad" | "book";
 
-export interface InterestApp {
-	id: `interest-${string}`;
+export interface DockApp {
+	id: `app-${string}`;
 	title: string;
-	glyph: AppGlyph;
-	/** Two colours used for the app icon's gradient. */
+	/**
+	 * Icon served from `public/dock/`, for example "/dock/figma.webp".
+	 * Falls back to the built-in `glyph` when absent.
+	 */
+	icon?: string;
+	/**
+	 * Set for bare logos that need a rounded tile behind them. Leave unset for
+	 * icons that already include their own rounded-square background.
+	 */
+	tile?: boolean;
+	glyph?: AppGlyph;
+	/** Two colours used for the tile gradient. */
 	colors: readonly [string, string];
+	/** Short label shown above the title in the app's window. */
+	category: string;
 	summary: string;
 }
 
-// Placeholder dock apps for interests outside of work. Swap titles, glyphs,
-// colours, and summaries for your own.
-export const interests: readonly InterestApp[] = [
+// The dock holds the applications actually in daily use. Replace the bracketed
+// summaries, and add an icon to `public/dock/` for each new entry.
+export const apps: readonly DockApp[] = [
 	{
-		id: "interest-music",
+		id: "app-vscode",
+		title: "Visual Studio Code",
+		icon: "/dock/vscode.webp",
+		tile: true,
+		colors: ["#ffffff", "#f1f3f5"],
+		category: "WHERE THE WORK HAPPENS",
+		summary: "[What you build here, and the extensions you rely on]",
+	},
+	{
+		id: "app-iterm",
+		title: "iTerm2",
+		icon: "/dock/iterm2.svg",
+		colors: ["#2b3a42", "#141b1f"],
+		category: "SHELL AND TOOLING",
+		summary: "[Your shell, dotfiles, and the commands you live in]",
+	},
+	{
+		id: "app-figma",
+		title: "Figma",
+		icon: "/dock/figma.webp",
+		tile: true,
+		colors: ["#ffffff", "#f1f3f5"],
+		category: "DESIGN AND DIAGRAMS",
+		summary: "[What you design, diagram, or prototype here]",
+	},
+	{
+		id: "app-music",
 		title: "Music",
-		glyph: "music",
-		colors: ["#ff6b8b", "#f5245a"],
-		summary: "[What you listen to, play, or make]",
-	},
-	{
-		id: "interest-photos",
-		title: "Photography",
-		glyph: "camera",
-		colors: ["#ffd25e", "#ff9500"],
-		summary: "[Places you shoot, gear you use, favourite shots]",
-	},
-	{
-		id: "interest-games",
-		title: "Games",
-		glyph: "gamepad",
-		colors: ["#7ee08a", "#28a745"],
-		summary: "[Games you are playing or would recommend]",
-	},
-	{
-		id: "interest-reading",
-		title: "Reading",
-		glyph: "book",
-		colors: ["#7cc4ff", "#2f7cf6"],
-		summary: "[Books on your desk right now]",
+		icon: "/dock/apple-music.webp",
+		colors: ["#fc5c7d", "#f02e4c"],
+		category: "OUTSIDE OF WORK",
+		summary: "[What you listen to while you work, or play yourself]",
 	},
 ];
 
-export type WindowId = SectionId | InterestApp["id"];
+export type WindowId = SectionId | DockApp["id"];
 
 export interface PortfolioEntry {
 	title: string;
