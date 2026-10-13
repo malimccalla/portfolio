@@ -5,13 +5,15 @@ export type SectionId =
 	| "certifications"
 	| "writeups"
 	| "resume"
-	| "contact";
+	| "contact"
+	| "llms";
 
 /**
  * Sections that hold several entries are folders. Single-document sections use
- * `markdown` (rendered as a `.md` file) or `document` for the PDF resume.
+ * `markdown` (rendered as a `.md` file), `text` (rendered as a `.txt` file),
+ * or `document` for the PDF resume.
  */
-export type IconKind = "folder" | "markdown" | "document";
+export type IconKind = "folder" | "markdown" | "text" | "document";
 
 export interface WindowDefinition {
 	id: SectionId;
@@ -62,6 +64,12 @@ export const windowDefinitions: readonly WindowDefinition[] = [
 		title: "contact.md",
 		icon: "markdown",
 		description: "Start a conversation",
+	},
+	{
+		id: "llms",
+		title: "llms.txt",
+		icon: "text",
+		description: "Context for ATS, LLMs, and agents",
 	},
 ];
 

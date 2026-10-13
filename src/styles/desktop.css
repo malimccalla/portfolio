@@ -393,12 +393,29 @@ img.app-icon.has-tile {
 .markdown-content {
 	overflow-wrap: anywhere;
 }
-.markdown-content h1,
+.professional-statement {
+	width: 100%;
+	max-width: none;
+}
+.professional-statement p {
+	font-size: 15px;
+	line-height: 1.7;
+}
+.markdown-content h1 {
+	margin: 0 0 6px;
+	font-size: 28px;
+	letter-spacing: -0.025em;
+}
 /* biome-ignore lint/style/noDescendingSpecificity: Content headings never share the titlebar selector. */
 .markdown-content h2 {
 	margin: 18px 0 10px;
 	font-size: 20px;
 	letter-spacing: -0.015em;
+}
+.markdown-content hr {
+	margin: 22px 0;
+	border: 0;
+	border-top: 1px solid #d8d8d8;
 }
 .markdown-content > ul,
 .markdown-content > ol {
@@ -505,6 +522,9 @@ img.app-icon.has-tile {
 	font-size: 20px;
 	color: #fff;
 	background: linear-gradient(#4fa3ff, #1660d8);
+}
+.about-avatar {
+	margin: 0 0 14px;
 }
 .interest-icon {
 	width: 64px;

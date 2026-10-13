@@ -49,12 +49,12 @@ function stubLayout(element: HTMLElement, box: DOMRect) {
 }
 
 describe("portfolio desktop", () => {
-	it("renders all seven semantic desktop icon buttons and opens about-me.md", () => {
+	it("renders all semantic desktop icon buttons and opens about-me.md", () => {
 		render(<Desktop />);
 		const icons = within(
 			screen.getByRole("navigation", { name: "Portfolio sections" }),
 		);
-		expect(icons.getAllByRole("button")).toHaveLength(7);
+		expect(icons.getAllByRole("button")).toHaveLength(windowDefinitions.length);
 		for (const definition of windowDefinitions) {
 			expect(
 				icons.getByRole("button", { name: `Open ${definition.title}` }),

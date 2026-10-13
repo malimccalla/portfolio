@@ -3,13 +3,14 @@ import type { AppGlyph, DockApp, IconKind } from "../../data/portfolio";
 
 export default function Icon({ kind }: { kind: IconKind }) {
 	const uid = useId();
-	if (kind === "document" || kind === "markdown") {
+	if (kind === "document" || kind === "markdown" || kind === "text") {
 		const markdown = kind === "markdown";
+		const text = kind === "text";
 		return (
 			<svg
 				viewBox="0 0 64 64"
 				aria-hidden="true"
-				className={`icon ${markdown ? "icon-markdown" : "icon-document"}`}
+				className={`icon ${markdown ? "icon-markdown" : text ? "icon-text" : "icon-document"}`}
 			>
 				<defs>
 					<linearGradient id={`doc-paper${uid}`} x1="0" y1="0" x2="0" y2="1">
@@ -35,7 +36,7 @@ export default function Icon({ kind }: { kind: IconKind }) {
 					width="22"
 					height="10"
 					rx="2"
-					fill={markdown ? "#3d9be6" : "#e5483f"}
+					fill={markdown ? "#3d9be6" : text ? "#6b7280" : "#e5483f"}
 				/>
 				<text
 					x="27"
@@ -46,7 +47,7 @@ export default function Icon({ kind }: { kind: IconKind }) {
 					fill="#fff"
 					fontFamily="-apple-system, Helvetica, Arial, sans-serif"
 				>
-					{markdown ? "MD" : "PDF"}
+					{markdown ? "MD" : text ? "TXT" : "PDF"}
 				</text>
 			</svg>
 		);

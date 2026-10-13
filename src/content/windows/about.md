@@ -1,35 +1,25 @@
 ---
 template: false
-lead: "Curious by nature. Defensive by mindset."
 ---
 
-I am an aspiring cybersecurity professional with a strong interest in how
-systems work, how they fail, and how they can be made more resilient. I enjoy
-turning complex technical problems into clear, practical actions that help
-people and organisations stay secure.
+# Mali McCalla
 
-My approach is grounded in **curiosity**, **continuous learning**, and
-**attention to detail**. Whether I am investigating unusual activity, building
-a home lab, or documenting what I have learned, I aim to understand the reason
-behind each decision rather than simply follow a checklist.
+**Staff Product Engineer · Application Security**  
+*Product engineering roots, applied to application security.*
 
-## What interests me
+[GitHub](https://github.com/malimccalla) · [LinkedIn](https://www.linkedin.com/in/malimccalla)
 
-- Security monitoring and incident investigation
-- Vulnerability management and secure configuration
-- Network and endpoint defence
-- Threat intelligence and attacker behaviour
-- Clear, useful technical documentation
+---
 
-## How I work
+## Professional Statement
 
-I value calm analysis, honest communication, and evidence-led decisions. I am
-comfortable working independently, but I also believe the best security
-outcomes come from sharing knowledge and collaborating with others.
-
-## What I am working toward
-
-I am building the practical skills required for a career in defensive
-cybersecurity. My goal is to contribute to a team where I can continue learning,
-take ownership of meaningful problems, and help protect the systems people rely
-on every day.
+I’ve spent the past decade as a product engineer and founder, taking software
+from early ideas to products people rely on and working across interfaces,
+backend systems, data, cloud infrastructure, and architecture. That experience
+has drawn me towards application security: I want to understand where software
+fails, identify risks before they become incidents, and help engineers make
+security part of how they build rather than a final gate. I value practical
+security that helps teams create safer products without slowing delivery, and I
+want to bring my systems thinking, product judgement, and empathy for developers
+to a product-security team that cares about protecting users and earning their
+trust.

@@ -43,7 +43,7 @@ export const collections = {
 			description: z.string(),
 			github: externalUrl,
 			linkedin: externalUrl,
-			email: z.string().email(),
+			email: z.string().email().optional(),
 			resume: z
 				.string()
 				.refine(

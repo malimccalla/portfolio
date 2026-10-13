@@ -35,11 +35,10 @@ const collection = [
 	<span class="interest-icon"><AppIcon app={app} /></span>
 	<div><span class="eyebrow">{app.category}</span><h3>{app.title}</h3></div>
 </div>}
-{id === "about" && <Profile mode="heading" />}
+{id === "about" && <Profile mode="avatar" />}
 {entry.data.lead && <p class="lead">{entry.data.lead}</p>}
 {id === "resume"
 	? <Profile mode="resume"><div class="markdown-content"><Content /></div></Profile>
-	: <div class="markdown-content"><Content /></div>}
+	: <div class:list={["markdown-content", { "professional-statement": id === "about" }]}><Content /></div>}
 {collection && <EntryList collection={collection} />}
-{id === "about" && <Profile mode="links" />}
 {id === "contact" && <><Profile mode="links" /><Profile mode="contact" /></>}
