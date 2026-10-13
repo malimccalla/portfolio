@@ -25,6 +25,13 @@ interface Point {
 	y: number;
 }
 
+interface Size {
+	width: number;
+	height: number;
+}
+
+const MIN_SIZE: Size = { width: 360, height: 280 };
+
 export default function DesktopWindow({
 	id,
 	title,
@@ -40,9 +47,11 @@ export default function DesktopWindow({
 }: Props) {
 	const [zoomed, setZoomed] = useState(false);
 	const [origin, setOrigin] = useState<Point>();
+	const [size, setSize] = useState<Size>();
 	const drag = useRef<{ pointer: Point; start: Point; bounds: DOMRect }>(
 		undefined,
 	);
+	const resize = useRef<{ pointer: Point; start: Size; max: Size }>(undefined);
 
 	const style: CSSProperties & Record<`--${string}`, string> = {
 		zIndex: stack,
@@ -51,6 +60,10 @@ export default function DesktopWindow({
 	if (origin) {
 		style["--window-x"] = `${origin.x}px`;
 		style["--window-y"] = `${origin.y}px`;
+	}
+	if (size) {
+		style["--w"] = `${size.width}px`;
+		style["--h"] = `${size.height}px`;
 	}
 
 	function startDrag(event: PointerEvent<HTMLElement>) {
@@ -91,6 +104,48 @@ export default function DesktopWindow({
 			y: clamp(
 				current.start.y + event.clientY - current.pointer.y,
 				current.bounds.height,
+			),
+		});
+	}
+
+	function startResize(event: PointerEvent<HTMLElement>) {
+		if (zoomed || event.button !== 0) return;
+		const windowElement = event.currentTarget.parentElement;
+		const layer = windowElement?.parentElement;
+		if (!windowElement || !layer) return;
+		const box = windowElement.getBoundingClientRect();
+		const bounds = layer.getBoundingClientRect();
+		// Pin the current position so growing the window cannot shift its origin.
+		setOrigin(
+			(value) =>
+				value ?? { x: box.left - bounds.left, y: box.top - bounds.top },
+		);
+		resize.current = {
+			pointer: { x: event.clientX, y: event.clientY },
+			start: { width: box.width, height: box.height },
+			max: {
+				width: bounds.right - box.left,
+				height: bounds.bottom - box.top,
+			},
+		};
+		event.currentTarget.setPointerCapture?.(event.pointerId);
+	}
+
+	function moveResize(event: PointerEvent<HTMLElement>) {
+		const current = resize.current;
+		if (!current) return;
+		const clamp = (value: number, min: number, max: number) =>
+			Math.round(Math.min(Math.max(value, min), Math.max(min, max)));
+		setSize({
+			width: clamp(
+				current.start.width + event.clientX - current.pointer.x,
+				MIN_SIZE.width,
+				current.max.width,
+			),
+			height: clamp(
+				current.start.height + event.clientY - current.pointer.y,
+				MIN_SIZE.height,
+				current.max.height,
 			),
 		});
 	}
@@ -173,6 +228,23 @@ export default function DesktopWindow({
 				<span>{subtitle}</span>
 				<span className="keyboard-hint">esc to close</span>
 			</footer>
+			<div
+				className="window-resize"
+				aria-hidden="true"
+				onPointerDown={startResize}
+				onPointerMove={moveResize}
+				onPointerUp={() => {
+					resize.current = undefined;
+				}}
+				onPointerCancel={() => {
+					resize.current = undefined;
+				}}
+				onDoubleClick={() => setSize(undefined)}
+			>
+				<svg viewBox="0 0 12 12" aria-hidden="true">
+					<path d="M10.5 4.5v6h-6M10.5 8.5v2h-2" />
+				</svg>
+			</div>
 		</section>
 	);
 }

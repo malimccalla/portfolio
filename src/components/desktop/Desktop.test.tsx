@@ -40,8 +40,16 @@ function dock() {
 	return within(screen.getByRole("navigation", { name: "Open windows" }));
 }
 
+function stubLayout(element: HTMLElement, box: DOMRect) {
+	const layer = element.parentElement as HTMLElement;
+	vi.spyOn(element, "getBoundingClientRect").mockReturnValue(box);
+	vi.spyOn(layer, "getBoundingClientRect").mockReturnValue(
+		new DOMRect(0, 0, 1200, 800),
+	);
+}
+
 describe("portfolio desktop", () => {
-	it("renders all seven semantic desktop icon buttons and opens About Me", () => {
+	it("renders all seven semantic desktop icon buttons and opens about-me.md", () => {
 		render(<Desktop />);
 		const icons = within(
 			screen.getByRole("navigation", { name: "Portfolio sections" }),
@@ -52,12 +60,12 @@ describe("portfolio desktop", () => {
 				icons.getByRole("button", { name: `Open ${definition.title}` }),
 			).toBeVisible();
 		}
-		expect(screen.getByRole("dialog", { name: "About Me" })).toBeVisible();
+		expect(screen.getByRole("dialog", { name: "about-me.md" })).toBeVisible();
 	});
 
 	it("requires double click with a mouse and shows the matching content", () => {
 		render(<Desktop />);
-		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
+		fireEvent.click(screen.getByRole("button", { name: "Close about-me.md" }));
 		fireEvent.click(screen.getByRole("button", { name: "Open Projects" }), {
 			detail: 1,
 		});
@@ -73,16 +81,18 @@ describe("portfolio desktop", () => {
 
 	it("closes a window and returns focus to its desktop icon", () => {
 		render(<Desktop />);
-		open("About Me");
-		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
+		open("about-me.md");
+		fireEvent.click(screen.getByRole("button", { name: "Close about-me.md" }));
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Open About Me" })).toHaveFocus();
+		expect(
+			screen.getByRole("button", { name: "Open about-me.md" }),
+		).toHaveFocus();
 		expect(dock().queryByRole("button")).not.toBeInTheDocument();
 	});
 
 	it("minimizes and restores via the dock without losing the window", () => {
 		render(<Desktop />);
-		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
+		fireEvent.click(screen.getByRole("button", { name: "Close about-me.md" }));
 		const window = open("Projects");
 		fireEvent.click(
 			within(window).getByRole("button", {
@@ -100,29 +110,29 @@ describe("portfolio desktop", () => {
 
 	it("keeps one instance and brings a selected window to the front", () => {
 		render(<Desktop />);
-		const about = open("About Me");
+		const about = open("about-me.md");
 		const projects = open("Projects");
 		expect(Number(projects.style.zIndex)).toBeGreaterThan(
 			Number(about.style.zIndex),
 		);
-		fireEvent.click(dock().getByRole("button", { name: "Show About Me" }));
+		fireEvent.click(dock().getByRole("button", { name: "Show about-me.md" }));
 		expect(Number(about.style.zIndex)).toBeGreaterThan(
 			Number(projects.style.zIndex),
 		);
-		open("About Me");
+		open("about-me.md");
 		expect(screen.getAllByRole("dialog")).toHaveLength(2);
 		expect(dock().getAllByRole("button")).toHaveLength(2);
 	});
 
 	it("activates a window by pointer interaction and keyboard focus", () => {
 		render(<Desktop />);
-		const about = open("About Me");
+		const about = open("about-me.md");
 		const projects = open("Projects");
 		fireEvent.pointerDown(
-			within(about).getByText("Markdown content for About Me"),
+			within(about).getByText("Markdown content for about-me.md"),
 		);
 		expect(
-			dock().getByRole("button", { name: "Minimize About Me" }),
+			dock().getByRole("button", { name: "Minimize about-me.md" }),
 		).toHaveAttribute("aria-pressed", "true");
 		act(() =>
 			within(projects).getByRole("button", { name: "Close Projects" }).focus(),
@@ -134,15 +144,15 @@ describe("portfolio desktop", () => {
 
 	it("supports keyboard-generated activation and Escape only within a window", () => {
 		render(<Desktop />);
-		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
-		const icon = screen.getByRole("button", { name: "Open Contact" });
+		fireEvent.click(screen.getByRole("button", { name: "Close about-me.md" }));
+		const icon = screen.getByRole("button", { name: "Open contact.md" });
 		act(() => icon.focus());
 		// Native buttons generate a detail=0 click for Enter/Space activation.
 		fireEvent.click(icon, { detail: 0 });
-		const heading = screen.getByRole("heading", { name: "Contact" });
+		const heading = screen.getByRole("heading", { name: "contact.md" });
 		expect(heading).toHaveFocus();
 		fireEvent.keyDown(icon, { key: "Escape" });
-		expect(screen.getByRole("dialog", { name: "Contact" })).toBeVisible();
+		expect(screen.getByRole("dialog", { name: "contact.md" })).toBeVisible();
 		fireEvent.keyDown(heading, { key: "Escape" });
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(icon).toHaveFocus();
@@ -150,18 +160,18 @@ describe("portfolio desktop", () => {
 
 	it("focuses the next visible window when closing or minimizing the active one", () => {
 		render(<Desktop />);
-		open("About Me");
+		open("about-me.md");
 		open("Projects");
 		fireEvent.click(screen.getByRole("button", { name: "Close Projects" }));
-		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
-		open("Contact");
+		expect(screen.getByRole("heading", { name: "about-me.md" })).toHaveFocus();
+		open("contact.md");
 		fireEvent.click(
-			within(screen.getByRole("dialog", { name: "Contact" })).getByRole(
+			within(screen.getByRole("dialog", { name: "contact.md" })).getByRole(
 				"button",
-				{ name: "Minimize Contact" },
+				{ name: "Minimize contact.md" },
 			),
 		);
-		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
+		expect(screen.getByRole("heading", { name: "about-me.md" })).toHaveFocus();
 	});
 
 	it("opens every content section with its supplied Astro slot", () => {
@@ -181,7 +191,7 @@ describe("portfolio desktop", () => {
 
 	it("opens the resume from the about window's interactive action", () => {
 		render(<Desktop />);
-		const window = open("About Me");
+		const window = open("about-me.md");
 		fireEvent.click(
 			within(window).getByRole("button", { name: "Open resume" }),
 		);
@@ -200,13 +210,13 @@ describe("portfolio desktop", () => {
 	it("shows one window on mobile and restores others using the dock", () => {
 		render(<Desktop />);
 		act(() => changeViewport(true));
-		open("About Me");
+		open("about-me.md");
 		open("Projects");
 		expect(screen.getAllByRole("dialog")).toHaveLength(1);
 		expect(screen.getByRole("dialog", { name: "Projects" })).toBeVisible();
-		fireEvent.click(dock().getByRole("button", { name: "Show About Me" }));
+		fireEvent.click(dock().getByRole("button", { name: "Show about-me.md" }));
 		expect(screen.getAllByRole("dialog")).toHaveLength(1);
-		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
+		expect(screen.getByRole("heading", { name: "about-me.md" })).toHaveFocus();
 		act(() => changeViewport(false));
 		expect(screen.getAllByRole("dialog")).toHaveLength(2);
 	});
@@ -224,10 +234,10 @@ describe("portfolio desktop", () => {
 
 	it("moves focus off the desktop when a viewport change makes it inert", () => {
 		render(<Desktop />);
-		open("About Me");
+		open("about-me.md");
 		act(() => screen.getByRole("button", { name: "Open Projects" }).focus());
 		act(() => changeViewport(true));
-		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
+		expect(screen.getByRole("heading", { name: "about-me.md" })).toHaveFocus();
 	});
 
 	it("selects a folder on single click like Finder", () => {
@@ -241,7 +251,7 @@ describe("portfolio desktop", () => {
 
 	it("opens, minimizes, and restores dock applications", () => {
 		render(<Desktop />);
-		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
+		fireEvent.click(screen.getByRole("button", { name: "Close about-me.md" }));
 		const dockApps = within(
 			screen.getByRole("navigation", { name: "Applications" }),
 		);
@@ -274,21 +284,56 @@ describe("portfolio desktop", () => {
 
 	it("toggles window zoom from the green traffic light", () => {
 		render(<Desktop />);
-		const window = open("Contact");
+		const window = open("contact.md");
 		fireEvent.click(
-			within(window).getByRole("button", { name: "Zoom Contact" }),
+			within(window).getByRole("button", { name: "Zoom contact.md" }),
 		);
 		expect(window).toHaveClass("is-zoomed");
 		fireEvent.click(
-			within(window).getByRole("button", { name: "Restore size of Contact" }),
+			within(window).getByRole("button", {
+				name: "Restore size of contact.md",
+			}),
 		);
 		expect(window).not.toHaveClass("is-zoomed");
+	});
+
+	it("resizes a window by dragging the corner grip", () => {
+		render(<Desktop />);
+		const window = screen.getByRole("dialog", { name: "about-me.md" });
+		stubLayout(window, new DOMRect(100, 50, 700, 580));
+		const grip = window.querySelector(".window-resize") as HTMLElement;
+
+		fireEvent.pointerDown(grip, { button: 0, clientX: 800, clientY: 630 });
+		fireEvent.pointerMove(grip, { clientX: 900, clientY: 700 });
+		fireEvent.pointerUp(grip);
+
+		expect(window.style.getPropertyValue("--w")).toBe("800px");
+		expect(window.style.getPropertyValue("--h")).toBe("650px");
+		// Growing must not move the window.
+		expect(window.style.getPropertyValue("--window-x")).toBe("100px");
+		expect(window.style.getPropertyValue("--window-y")).toBe("50px");
+	});
+
+	it("keeps a resized window within its minimum size and the desktop bounds", () => {
+		render(<Desktop />);
+		const window = screen.getByRole("dialog", { name: "about-me.md" });
+		stubLayout(window, new DOMRect(100, 50, 700, 580));
+		const grip = window.querySelector(".window-resize") as HTMLElement;
+
+		fireEvent.pointerDown(grip, { button: 0, clientX: 800, clientY: 630 });
+		fireEvent.pointerMove(grip, { clientX: 0, clientY: 0 });
+		expect(window.style.getPropertyValue("--w")).toBe("360px");
+		expect(window.style.getPropertyValue("--h")).toBe("280px");
+
+		fireEvent.pointerMove(grip, { clientX: 4000, clientY: 4000 });
+		expect(window.style.getPropertyValue("--w")).toBe("1100px");
+		expect(window.style.getPropertyValue("--h")).toBe("750px");
 	});
 
 	it("shows the active window title in the menu bar", () => {
 		render(<Desktop />);
 		const menuBar = document.querySelector(".menu-app-name");
-		expect(menuBar).toHaveTextContent("About Me");
+		expect(menuBar).toHaveTextContent("about-me.md");
 		open("Experience");
 		expect(menuBar).toHaveTextContent("Experience");
 	});

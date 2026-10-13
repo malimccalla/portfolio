@@ -364,6 +364,30 @@ img.app-icon.has-tile {
 	background: #f6f6f6;
 	border-top: 1px solid #e2e2e2;
 }
+.window-resize {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 18px;
+	height: 18px;
+	display: grid;
+	place-items: center;
+	cursor: nwse-resize;
+	touch-action: none;
+	color: #00000059;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: The resize grip never shares the traffic-light selectors. */
+.window-resize svg {
+	width: 11px;
+	height: 11px;
+	stroke: currentColor;
+	stroke-width: 1.2;
+	stroke-linecap: round;
+	fill: none;
+}
+.desktop-window.is-zoomed .window-resize {
+	display: none;
+}
 
 /* ---------- Window content ---------- */
 .markdown-content {
@@ -761,6 +785,9 @@ img.app-icon.has-tile {
 	}
 	.window-body {
 		padding: 18px;
+	}
+	.window-resize {
+		display: none;
 	}
 	.keyboard-hint {
 		display: none;

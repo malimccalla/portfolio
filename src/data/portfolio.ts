@@ -7,7 +7,11 @@ export type SectionId =
 	| "resume"
 	| "contact";
 
-export type IconKind = "folder" | "document";
+/**
+ * Sections that hold several entries are folders. Single-document sections use
+ * `markdown` (rendered as a `.md` file) or `document` for the PDF resume.
+ */
+export type IconKind = "folder" | "markdown" | "document";
 
 export interface WindowDefinition {
 	id: SectionId;
@@ -19,8 +23,8 @@ export interface WindowDefinition {
 export const windowDefinitions: readonly WindowDefinition[] = [
 	{
 		id: "about",
-		title: "About Me",
-		icon: "folder",
+		title: "about-me.md",
+		icon: "markdown",
 		description: "The person behind the work",
 	},
 	{
@@ -55,8 +59,8 @@ export const windowDefinitions: readonly WindowDefinition[] = [
 	},
 	{
 		id: "contact",
-		title: "Contact",
-		icon: "folder",
+		title: "contact.md",
+		icon: "markdown",
 		description: "Start a conversation",
 	},
 ];
