@@ -35,7 +35,6 @@ const collection = [
 	<span class="interest-icon"><AppIcon app={app} /></span>
 	<div><span class="eyebrow">{app.category}</span><h3>{app.title}</h3></div>
 </div>}
-{id === "about" && <Profile mode="avatar" />}
 {entry.data.lead && <p class="lead">{entry.data.lead}</p>}
 {id === "resume"
 	? <Profile mode="resume"><div class="markdown-content"><Content /></div></Profile>

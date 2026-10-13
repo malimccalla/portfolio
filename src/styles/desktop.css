@@ -499,32 +499,11 @@ img.app-icon.has-tile {
 	border-radius: 50%;
 	background: #f5a524;
 }
-.profile-heading,
 .interest-heading {
 	display: flex;
 	align-items: center;
 	gap: 16px;
 	margin: 18px 0;
-}
-.profile-heading p {
-	margin: 0;
-	color: var(--muted);
-}
-.profile-avatar {
-	width: 64px;
-	height: 64px;
-	flex: none;
-	display: grid;
-	place-items: center;
-	border-radius: 50%;
-	font-family: var(--mono);
-	font-weight: 700;
-	font-size: 20px;
-	color: #fff;
-	background: linear-gradient(#4fa3ff, #1660d8);
-}
-.about-avatar {
-	margin: 0 0 14px;
 }
 .interest-icon {
 	width: 64px;

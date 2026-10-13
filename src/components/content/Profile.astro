@@ -4,7 +4,7 @@ import { getProfile } from "../../data/content";
 import Icon from "../desktop/Icon";
 
 interface Props {
-	mode: "avatar" | "links" | "resume" | "contact";
+	mode: "links" | "resume" | "contact";
 }
 // biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
 const { mode } = Astro.props;
@@ -12,7 +12,6 @@ const { mode } = Astro.props;
 const profile = await getProfile();
 ---
 
-{mode === "avatar" && <div class="profile-avatar about-avatar" aria-hidden="true">&gt;_</div>}
 {mode === "links" && <div class="action-links">
 	{profile.email && <a class="button-link primary" href={`mailto:${profile.email}`}>Email me <span aria-hidden="true">↗</span></a>}
 	<a class:list={["button-link", { primary: !profile.email }]} href={profile.github} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
