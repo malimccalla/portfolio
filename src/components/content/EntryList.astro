@@ -1,0 +1,31 @@
+---
+import { getCollection, render } from "astro:content";
+
+interface Props {
+	collection: "projects" | "writeups" | "experience" | "certifications";
+}
+const entries = (await getCollection(Astro.props.collection)).sort(
+	(a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id),
+);
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const rendered = await Promise.all(
+	entries.map(async (entry) => ({
+		entry,
+		...(await render(entry)),
+	})),
+);
+---
+
+<div class="entry-list">
+	{rendered.map(({ entry, Content }, index) => <article class="entry-card">
+		<span class="eyebrow">{entry.data.eyebrow ?? `FIELD NOTES / ${String(index + 1).padStart(2, "0")}`}</span>
+		<h3>{entry.data.title}</h3>
+		{entry.data.summary && <p>{entry.data.summary}</p>}
+		<div class="markdown-content"><Content /></div>
+		{entry.data.tools.length > 0 && <><h4>Tools &amp; technologies</h4><ul class="tags">{entry.data.tools.map((tool) => <li>{tool}</li>)}</ul></>}
+		{entry.data.concepts.length > 0 && <><h4>Security concepts</h4><p class="concepts">{entry.data.concepts.join(" / ")}</p></>}
+		{entry.data.href
+			? <a class="text-action" href={entry.data.href} target="_blank" rel="noreferrer">{entry.data.linkLabel ?? "Learn more"} <span aria-hidden="true">↗</span></a>
+			: entry.data.linkLabel && <button type="button" class="text-action" disabled>{entry.data.linkLabel} <span aria-hidden="true">↗</span> <span class="link-placeholder">[Add URL]</span></button>}
+	</article>)}
+</div>

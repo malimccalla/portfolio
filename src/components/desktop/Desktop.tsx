@@ -25,7 +25,10 @@ const windowApplications = [
 	})),
 ];
 
-export default function Desktop({ children }: { children?: ReactNode }) {
+export default function Desktop({
+	children,
+	...content
+}: { children?: ReactNode } & Record<string, ReactNode>) {
 	const [windows, dispatch] = useReducer(windowReducer, []);
 	const [mobile, setMobile] = useState(false);
 	const [selected, setSelected] = useState<WindowId>();
@@ -83,6 +86,11 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 		setSelected(id);
 		transition({ type: "open", id });
 	}
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: This is an intentional one-time startup action.
+	useEffect(() => {
+		open("about");
+	}, []);
 
 	return (
 		<main
@@ -151,7 +159,11 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 									transition({ type: "minimize", id: window.id })
 								}
 							>
-								<WindowContent id={window.id} onOpen={open} />
+								<WindowContent
+									id={window.id}
+									content={content[window.id.replace(/^app-/, "")]}
+									onOpen={open}
+								/>
 							</DesktopWindow>
 						);
 					})}

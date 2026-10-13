@@ -1,9 +1,19 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apps, windowDefinitions } from "../../data/portfolio";
-import Desktop from "./Desktop";
+import DesktopIsland from "./Desktop";
 
 let changeViewport: (matches: boolean) => void;
+
+function Desktop() {
+	const content = Object.fromEntries(
+		[...windowDefinitions, ...apps].map(({ id, title }) => [
+			id.replace(/^app-/, ""),
+			<p key={id}>Markdown content for {title}</p>,
+		]),
+	);
+	return <DesktopIsland {...content} />;
+}
 
 beforeEach(() => {
 	const listeners = new Set<() => void>();
@@ -31,7 +41,7 @@ function dock() {
 }
 
 describe("portfolio desktop", () => {
-	it("renders all seven semantic desktop icon buttons", () => {
+	it("renders all seven semantic desktop icon buttons and opens About Me", () => {
 		render(<Desktop />);
 		const icons = within(
 			screen.getByRole("navigation", { name: "Portfolio sections" }),
@@ -42,20 +52,19 @@ describe("portfolio desktop", () => {
 				icons.getByRole("button", { name: `Open ${definition.title}` }),
 			).toBeVisible();
 		}
-		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(screen.getByRole("dialog", { name: "About Me" })).toBeVisible();
 	});
 
 	it("requires double click with a mouse and shows the matching content", () => {
 		render(<Desktop />);
+		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
 		fireEvent.click(screen.getByRole("button", { name: "Open Projects" }), {
 			detail: 1,
 		});
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		const window = open("Projects");
 		expect(
-			within(window).getByRole("heading", {
-				name: "[Project title] · Detection lab",
-			}),
+			within(window).getByText("Markdown content for Projects"),
 		).toBeVisible();
 		expect(
 			within(window).getByRole("heading", { name: "Projects" }),
@@ -73,6 +82,7 @@ describe("portfolio desktop", () => {
 
 	it("minimizes and restores via the dock without losing the window", () => {
 		render(<Desktop />);
+		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
 		const window = open("Projects");
 		fireEvent.click(
 			within(window).getByRole("button", {
@@ -109,7 +119,7 @@ describe("portfolio desktop", () => {
 		const about = open("About Me");
 		const projects = open("Projects");
 		fireEvent.pointerDown(
-			within(about).getByText("Curiosity, with a defensive mindset."),
+			within(about).getByText("Markdown content for About Me"),
 		);
 		expect(
 			dock().getByRole("button", { name: "Minimize About Me" }),
@@ -124,6 +134,7 @@ describe("portfolio desktop", () => {
 
 	it("supports keyboard-generated activation and Escape only within a window", () => {
 		render(<Desktop />);
+		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
 		const icon = screen.getByRole("button", { name: "Open Contact" });
 		act(() => icon.focus());
 		// Native buttons generate a detail=0 click for Enter/Space activation.
@@ -153,11 +164,13 @@ describe("portfolio desktop", () => {
 		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
 	});
 
-	it("opens every content section with clearly marked placeholders", () => {
+	it("opens every content section with its supplied Astro slot", () => {
 		render(<Desktop />);
 		for (const definition of windowDefinitions) {
 			const window = open(definition.title);
-			expect(within(window).getByText(/Template content/)).toBeVisible();
+			expect(
+				within(window).getByText(`Markdown content for ${definition.title}`),
+			).toBeVisible();
 			fireEvent.click(
 				within(window).getByRole("button", {
 					name: `Close ${definition.title}`,
@@ -166,12 +179,22 @@ describe("portfolio desktop", () => {
 		}
 	});
 
-	it("keeps the resume action disabled until a real PDF is configured", () => {
+	it("opens the resume from the about window's interactive action", () => {
 		render(<Desktop />);
-		const window = open("Resume");
-		expect(
-			within(window).getByRole("button", { name: /Open resume PDF/ }),
-		).toBeDisabled();
+		const window = open("About Me");
+		fireEvent.click(
+			within(window).getByRole("button", { name: "Open resume" }),
+		);
+		expect(screen.getByRole("dialog", { name: "Resume" })).toBeVisible();
+		expect(screen.getByRole("heading", { name: "Resume" })).toHaveFocus();
+	});
+
+	it("reports a missing window slot instead of silently showing an empty window", () => {
+		render(<DesktopIsland />);
+		const window = open("Projects");
+		expect(within(window).getByRole("alert")).toHaveTextContent(
+			"Content is unavailable for this window.",
+		);
 	});
 
 	it("shows one window on mobile and restores others using the dock", () => {
@@ -218,6 +241,7 @@ describe("portfolio desktop", () => {
 
 	it("opens, minimizes, and restores dock applications", () => {
 		render(<Desktop />);
+		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
 		const dockApps = within(
 			screen.getByRole("navigation", { name: "Applications" }),
 		);
@@ -227,12 +251,16 @@ describe("portfolio desktop", () => {
 			dockApps.getByRole("button", { name: `Open ${first.title}` }),
 		);
 		const window = screen.getByRole("dialog", { name: first.title });
-		expect(within(window).getByText(first.summary)).toBeVisible();
+		expect(
+			within(window).getByText(`Markdown content for ${first.title}`),
+		).toBeVisible();
 		expect(dock().queryByRole("button")).not.toBeInTheDocument();
 		fireEvent.click(
 			dockApps.getByRole("button", { name: `Minimize ${first.title}` }),
 		);
-		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("dialog", { name: first.title }),
+		).not.toBeInTheDocument();
 		fireEvent.click(
 			dockApps.getByRole("button", { name: `Restore ${first.title}` }),
 		);
@@ -260,7 +288,7 @@ describe("portfolio desktop", () => {
 	it("shows the active window title in the menu bar", () => {
 		render(<Desktop />);
 		const menuBar = document.querySelector(".menu-app-name");
-		expect(menuBar).toHaveTextContent("Finder");
+		expect(menuBar).toHaveTextContent("About Me");
 		open("Experience");
 		expect(menuBar).toHaveTextContent("Experience");
 	});

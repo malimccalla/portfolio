@@ -1,0 +1,39 @@
+---
+import { getProfile } from "../../data/content";
+// biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
+import Icon from "../desktop/Icon";
+
+interface Props {
+	mode: "heading" | "links" | "resume" | "contact";
+}
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const { mode } = Astro.props;
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const profile = await getProfile();
+---
+
+{mode === "heading" && <div class="profile-heading">
+	<div class="profile-avatar" aria-hidden="true">&gt;_</div>
+	<div><span class="eyebrow">HELLO, I'M</span><h3>{profile.name}</h3><p>{profile.role}</p></div>
+</div>}
+{mode === "links" && <div class="action-links">
+	<a class="button-link primary" href={`mailto:${profile.email}`}>Email me <span aria-hidden="true">↗</span></a>
+	<a class="button-link" href={profile.github} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+	<a class="button-link" href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
+</div>}
+{mode === "resume" && <>
+	<div class="resume-preview">
+		<span class="resume-icon"><Icon kind="document" /></span>
+		<span class="eyebrow">RESUME / PDF</span>
+		<h3>{profile.name}</h3>
+		<slot />
+	</div>
+	{profile.resumeReady
+		? <a class="button-link primary" href={profile.resume} target="_blank" rel="noreferrer">Open resume PDF <span aria-hidden="true">↗</span></a>
+		: <><button type="button" class="button-link primary" disabled>Open resume PDF · Not added yet</button><p>Add your PDF as <code>public/resume.pdf</code> and set <code>resumeReady: true</code> in <code>src/content/profile/main.md</code>.</p></>}
+</>}
+{mode === "contact" && <dl class="contact-details">
+	<div><dt>Email</dt><dd>{profile.email}</dd></div>
+	<div><dt>GitHub / LinkedIn</dt><dd><a href={profile.github} target="_blank" rel="noreferrer">GitHub</a> / <a href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn</a></dd></div>
+	<div><dt>Location / timezone</dt><dd>{profile.location}</dd></div>
+</dl>}

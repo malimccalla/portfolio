@@ -1,28 +1,38 @@
 ---
 // biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
-import Desktop from "../components/desktop/Desktop";
+import WindowSection from "../components/content/WindowSection.astro";
 // biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
-import { apps, profile, projects, writeups } from "../data/portfolio";
+import Desktop from "../components/desktop/Desktop";
+import { getProfile } from "../data/content";
+// biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
+import { apps, windowDefinitions } from "../data/portfolio";
 // biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
 import Layout from "../layouts/Layout.astro";
+
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const profile = await getProfile();
 ---
 
 <Layout>
 	<Desktop client:load>
-		<section class="widget" aria-labelledby="intro-title">
-			<span class="widget-eyebrow">CYBERSECURITY · A WORK IN PROGRESS</span>
-			<h1 id="intro-title">{profile.name}</h1>
-			<p class="widget-role">{profile.role}</p>
-			<p>{profile.description}</p>
-			<p class="widget-hint">Double-click a folder to take a look around.</p>
-		</section>
+		<WindowSection slot="about" id="about" />
+		<WindowSection slot="projects" id="projects" />
+		<WindowSection slot="experience" id="experience" />
+		<WindowSection slot="certifications" id="certifications" />
+		<WindowSection slot="writeups" id="writeups" />
+		<WindowSection slot="resume" id="resume" />
+		<WindowSection slot="contact" id="contact" />
+		<WindowSection slot="vscode" id="app-vscode" />
+		<WindowSection slot="iterm" id="app-iterm" />
+		<WindowSection slot="figma" id="app-figma" />
+		<WindowSection slot="music" id="app-music" />
 	</Desktop>
 	<noscript>
 		<style is:inline>astro-island { display: none; }</style>
 		<main class="no-script">
-			<section><h1>{profile.name} · Cybersecurity portfolio</h1><p>{profile.description}</p><p>The interactive desktop requires JavaScript. You can still browse this overview and contact links.</p><p>Template content: replace all bracketed details and placeholder URLs before publishing.</p><h2>About Me</h2><p>[Your introduction and security interests]</p></section>
-			{[{ title: "Projects", entries: projects }, { title: "Cybersecurity Write-ups", entries: writeups }].map((collection) => <section><h2>{collection.title}</h2>{collection.entries.map((entry) => <article><h3>{entry.title}</h3><p>{entry.summary}</p><p>Tools: {entry.tools.join(", ")}. Concepts: {entry.concepts.join(", ")}.</p><p>{entry.linkLabel}: [Add URL]</p></article>)}</section>)}
-			<section><h2>Experience</h2><p>[Your role, organization, dates, and contributions]</p><h2>Certifications</h2><p>[Your credential, issuer, status, and verification URL]</p><h2>Resume</h2>{profile.resumeReady ? <a href={profile.resume}>Open resume PDF</a> : <p>Resume PDF not added yet.</p>}<h2>Apps I use</h2><ul>{apps.map((app) => <li>{app.title}: {app.summary}</li>)}</ul><h2>Contact</h2><p><a href={`mailto:${profile.email}`}>Email [Replace address]</a> · <a href={profile.github}>GitHub [Replace username]</a> · <a href={profile.linkedin}>LinkedIn [Replace username]</a></p></section>
+			<section><h1>{profile.name} · Cybersecurity portfolio</h1><p>{profile.description}</p><p>The interactive desktop requires JavaScript. You can still browse all the content below.</p></section>
+			{windowDefinitions.map((definition) => <section><h2>{definition.title}</h2><WindowSection id={definition.id} /></section>)}
+			<section><h2>Apps I use</h2>{apps.map((app) => <section><WindowSection id={app.id} /></section>)}</section>
 		</main>
 	</noscript>
 </Layout>

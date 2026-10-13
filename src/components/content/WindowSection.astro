@@ -1,0 +1,45 @@
+---
+import { getEntry, render } from "astro:content";
+import { apps, type WindowId } from "../../data/portfolio";
+// biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
+import { AppIcon } from "../desktop/Icon";
+// biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
+import EntryList from "./EntryList.astro";
+// biome-ignore lint/correctness/noUnusedImports: Used in the Astro template below.
+import Profile from "./Profile.astro";
+
+interface Props {
+	id: WindowId;
+}
+const { id } = Astro.props;
+const entry = await getEntry("windows", id);
+if (!entry)
+	throw new Error(`Missing window content: src/content/windows/${id}.md`);
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const { Content } = await render(entry);
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const app = apps.find((app) => app.id === id);
+// biome-ignore lint/correctness/noUnusedVariables: Used in the Astro template below.
+const collection = [
+	"projects",
+	"writeups",
+	"experience",
+	"certifications",
+].includes(id)
+	? (id as "projects" | "writeups" | "experience" | "certifications")
+	: undefined;
+---
+
+{entry.data.template && <p class="placeholder-note"><span class="status-dot"></span>Template content · Replace bracketed details and links before publishing.</p>}
+{app && <div class="interest-heading">
+	<span class="interest-icon"><AppIcon app={app} /></span>
+	<div><span class="eyebrow">{app.category}</span><h3>{app.title}</h3></div>
+</div>}
+{id === "about" && <Profile mode="heading" />}
+{entry.data.lead && <p class="lead">{entry.data.lead}</p>}
+{id === "resume"
+	? <Profile mode="resume"><div class="markdown-content"><Content /></div></Profile>
+	: <div class="markdown-content"><Content /></div>}
+{collection && <EntryList collection={collection} />}
+{id === "about" && <Profile mode="links" />}
+{id === "contact" && <><Profile mode="links" /><Profile mode="contact" /></>}
