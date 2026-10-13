@@ -1,9 +1,15 @@
-import type { CSSProperties, ReactNode } from "react";
-import type { WindowDefinition } from "../../data/portfolio";
-import Icon from "./Icon";
+import {
+	type CSSProperties,
+	type PointerEvent,
+	type ReactNode,
+	useRef,
+	useState,
+} from "react";
 
 interface Props {
-	definition: WindowDefinition;
+	id: string;
+	title: string;
+	subtitle: string;
 	active: boolean;
 	hidden: boolean;
 	stack: number;
@@ -14,8 +20,15 @@ interface Props {
 	children: ReactNode;
 }
 
+interface Point {
+	x: number;
+	y: number;
+}
+
 export default function DesktopWindow({
-	definition,
+	id,
+	title,
+	subtitle,
 	active,
 	hidden,
 	stack,
@@ -25,15 +38,68 @@ export default function DesktopWindow({
 	onMinimize,
 	children,
 }: Props) {
-	const style: CSSProperties & { "--window-offset": string } = {
+	const [zoomed, setZoomed] = useState(false);
+	const [origin, setOrigin] = useState<Point>();
+	const drag = useRef<{ pointer: Point; start: Point; bounds: DOMRect }>(
+		undefined,
+	);
+
+	const style: CSSProperties & Record<`--${string}`, string> = {
 		zIndex: stack,
-		"--window-offset": `${position * 24}px`,
+		"--window-offset": `${position * 28}px`,
 	};
+	if (origin) {
+		style["--window-x"] = `${origin.x}px`;
+		style["--window-y"] = `${origin.y}px`;
+	}
+
+	function startDrag(event: PointerEvent<HTMLElement>) {
+		if (
+			zoomed ||
+			event.button !== 0 ||
+			(event.target instanceof Element && event.target.closest("button"))
+		)
+			return;
+		const windowElement = event.currentTarget.parentElement;
+		const layer = windowElement?.parentElement;
+		if (!windowElement || !layer) return;
+		const box = windowElement.getBoundingClientRect();
+		const bounds = layer.getBoundingClientRect();
+		drag.current = {
+			pointer: { x: event.clientX, y: event.clientY },
+			start: { x: box.left - bounds.left, y: box.top - bounds.top },
+			bounds: new DOMRect(
+				0,
+				0,
+				bounds.width - box.width,
+				bounds.height - box.height,
+			),
+		};
+		event.currentTarget.setPointerCapture?.(event.pointerId);
+	}
+
+	function moveDrag(event: PointerEvent<HTMLElement>) {
+		const current = drag.current;
+		if (!current) return;
+		const clamp = (value: number, max: number) =>
+			Math.round(Math.min(Math.max(value, 0), Math.max(max, 0)));
+		setOrigin({
+			x: clamp(
+				current.start.x + event.clientX - current.pointer.x,
+				current.bounds.width,
+			),
+			y: clamp(
+				current.start.y + event.clientY - current.pointer.y,
+				current.bounds.height,
+			),
+		});
+	}
+
 	return (
 		<section
 			role="dialog"
-			aria-labelledby={`title-${definition.id}`}
-			className={`desktop-window ${active ? "is-active" : ""}`}
+			aria-labelledby={`title-${id}`}
+			className={`desktop-window ${active ? "is-active" : ""} ${zoomed ? "is-zoomed" : ""} ${origin ? "is-placed" : ""}`}
 			style={style}
 			hidden={hidden}
 			onFocusCapture={onActivate}
@@ -47,42 +113,65 @@ export default function DesktopWindow({
 				}
 			}}
 		>
-			<header className="window-titlebar">
-				<Icon kind={definition.icon} />
-				<h2 id={`title-${definition.id}`} tabIndex={-1}>
-					{definition.title}
-				</h2>
-				<div className="window-controls">
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: Dragging and double-click zoom are pointer enhancements; keyboard users have the zoom button. */}
+			<header
+				className="window-titlebar"
+				onPointerDown={startDrag}
+				onPointerMove={moveDrag}
+				onPointerUp={() => {
+					drag.current = undefined;
+				}}
+				onPointerCancel={() => {
+					drag.current = undefined;
+				}}
+				onDoubleClick={(event) => {
+					if (
+						!(event.target instanceof Element && event.target.closest("button"))
+					)
+						setZoomed((value) => !value);
+				}}
+			>
+				<div className="traffic-lights">
 					<button
 						type="button"
-						aria-label={`Minimize ${definition.title}`}
-						onClick={onMinimize}
+						className="traffic-light close"
+						aria-label={`Close ${title}`}
+						onClick={onClose}
 					>
-						<svg viewBox="0 0 20 20" aria-hidden="true">
-							<path d="M5 13h10" />
+						<svg viewBox="0 0 12 12" aria-hidden="true">
+							<path d="m3.5 3.5 5 5m0-5-5 5" />
 						</svg>
 					</button>
 					<button
 						type="button"
-						className="close-control"
-						aria-label={`Close ${definition.title}`}
-						onClick={onClose}
+						className="traffic-light minimize"
+						aria-label={`Minimize ${title}`}
+						onClick={onMinimize}
 					>
-						<svg viewBox="0 0 20 20" aria-hidden="true">
-							<path d="m6 6 8 8m0-8-8 8" />
+						<svg viewBox="0 0 12 12" aria-hidden="true">
+							<path d="M3 6h6" />
+						</svg>
+					</button>
+					<button
+						type="button"
+						className="traffic-light zoom"
+						aria-label={`${zoomed ? "Restore size of" : "Zoom"} ${title}`}
+						aria-pressed={zoomed}
+						onClick={() => setZoomed((value) => !value)}
+					>
+						<svg viewBox="0 0 12 12" aria-hidden="true">
+							<path d="M3.5 7.5v-4h4ZM8.5 4.5v4h-4Z" />
 						</svg>
 					</button>
 				</div>
+				<h2 id={`title-${id}`} tabIndex={-1}>
+					{title}
+				</h2>
 			</header>
-			<div className="window-path">
-				<span>workspace</span>
-				<span aria-hidden="true">/</span>
-				<span>{definition.id}</span>
-			</div>
 			<div className="window-body">{children}</div>
 			<footer className="window-footer">
-				<span>{definition.description}</span>
-				<span className="keyboard-hint">ESC to close</span>
+				<span>{subtitle}</span>
+				<span className="keyboard-hint">esc to close</span>
 			</footer>
 		</section>
 	);

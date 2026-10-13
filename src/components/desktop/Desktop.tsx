@@ -1,8 +1,13 @@
 import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
-import { type WindowId, windowDefinitions } from "../../data/portfolio";
+import {
+	interests,
+	type WindowId,
+	windowDefinitions,
+} from "../../data/portfolio";
 import DesktopIcon from "./DesktopIcon";
 import DesktopWindow from "./DesktopWindow";
-import Taskbar from "./Taskbar";
+import Dock from "./Dock";
+import MenuBar from "./MenuBar";
 import WindowContent from "./WindowContent";
 import {
 	focusedWindow,
@@ -11,12 +16,27 @@ import {
 } from "./windowManager";
 import "../../styles/desktop.css";
 
+const applications = [
+	...windowDefinitions.map((definition) => ({
+		id: definition.id,
+		title: definition.title,
+		subtitle: definition.description,
+	})),
+	...interests.map((app) => ({
+		id: app.id,
+		title: app.title,
+		subtitle: "Outside of work",
+	})),
+];
+
 export default function Desktop({ children }: { children?: ReactNode }) {
 	const [windows, dispatch] = useReducer(windowReducer, []);
 	const [mobile, setMobile] = useState(false);
+	const [selected, setSelected] = useState<WindowId>();
 	const root = useRef<HTMLElement>(null);
 	const focusTarget = useRef<string | undefined>(undefined);
 	const active = focusedWindow(windows);
+	const activeTitle = applications.find((app) => app.id === active)?.title;
 
 	useEffect(() => {
 		const query = matchMedia(
@@ -41,7 +61,9 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 		if (
 			mobile &&
 			active &&
-			!document.activeElement?.closest(".desktop-window.is-active, .taskbar")
+			!document.activeElement?.closest(
+				".desktop-window.is-active, .dock-container, .menu-bar",
+			)
 		) {
 			root.current?.querySelector<HTMLElement>(`#title-${active}`)?.focus();
 		}
@@ -50,13 +72,17 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 	function transition(action: WindowAction) {
 		const next = windowReducer(windows, action);
 		const nextActive = focusedWindow(next);
+		const isSection = windowDefinitions.some(
+			(definition) => definition.id === action.id,
+		);
 		focusTarget.current = nextActive
 			? `title-${nextActive}`
-			: `desktop-${action.id}`;
+			: `${isSection ? "desktop" : "dock"}-${action.id}`;
 		dispatch(action);
 	}
 
 	function open(id: WindowId) {
+		setSelected(id);
 		transition({ type: "open", id });
 	}
 
@@ -79,53 +105,48 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 				transition({ type: "close", id: active });
 			}}
 		>
+			<MenuBar appName={activeTitle ?? "Finder"} />
 			<div className="desktop-surface">
-				<div className="desktop-home" inert={mobile && Boolean(active)}>
-					{children}
-					<div className="desktop-navigation">
-						<div className="section-heading">
-							<span className="eyebrow">EXPLORE THE WORKSPACE</span>
-							<span className="file-count">07 items</span>
-						</div>
-						<p id="desktop-instructions" className="desktop-instructions">
-							<span className="mouse-instructions">
-								Double-click to open ·{" "}
-							</span>
-							<span className="touch-instructions">Tap to open · </span>
-							Keyboard: Tab, then Enter or Space
-						</p>
-						<nav className="desktop-icons" aria-label="Portfolio sections">
-							{windowDefinitions.map((definition) => (
-								<DesktopIcon
-									key={definition.id}
-									definition={definition}
-									isOpen={windows.some((window) => window.id === definition.id)}
-									onOpen={() => open(definition.id)}
-								/>
-							))}
-						</nav>
-					</div>
-					<div className="desktop-footnote">
-						<span className="status-dot" />
-						<span>Built with curiosity. Documented with care.</span>
-						<span className="workspace-version">WORKSPACE / 01</span>
-					</div>
+				<div
+					className="desktop-home"
+					inert={mobile && Boolean(active)}
+					onPointerDown={(event) => {
+						if (!(event.target as Element).closest(".desktop-icon"))
+							setSelected(undefined);
+					}}
+				>
+					{children && <div className="desktop-widgets">{children}</div>}
+					<p id="desktop-instructions" className="sr-only">
+						Double-click or tap to open. Keyboard: Tab, then Enter or Space.
+					</p>
+					<nav className="desktop-icons" aria-label="Portfolio sections">
+						{windowDefinitions.map((definition) => (
+							<DesktopIcon
+								key={definition.id}
+								definition={definition}
+								isOpen={windows.some((window) => window.id === definition.id)}
+								selected={selected === definition.id}
+								onSelect={() => setSelected(definition.id)}
+								onOpen={() => open(definition.id)}
+							/>
+						))}
+					</nav>
 				</div>
 				<div className="window-layer">
-					{windowDefinitions.map((definition, position) => {
-						const index = windows.findIndex(
-							(window) => window.id === definition.id,
-						);
+					{applications.map((app, position) => {
+						const index = windows.findIndex((window) => window.id === app.id);
 						const window = windows[index];
 						if (!window) return null;
 						return (
 							<DesktopWindow
 								key={window.id}
-								definition={definition}
+								id={app.id}
+								title={app.title}
+								subtitle={app.subtitle}
 								active={active === window.id}
 								hidden={window.minimized || (mobile && active !== window.id)}
 								stack={index + 1}
-								position={position % 4}
+								position={position % 5}
 								onActivate={() => dispatch({ type: "activate", id: window.id })}
 								onClose={() => transition({ type: "close", id: window.id })}
 								onMinimize={() =>
@@ -138,18 +159,15 @@ export default function Desktop({ children }: { children?: ReactNode }) {
 					})}
 				</div>
 			</div>
-			<Taskbar
+			<Dock
 				windows={windows}
 				active={active}
-				onStart={() => open("about")}
 				onSelect={(id) =>
 					transition({ type: active === id ? "minimize" : "open", id })
 				}
 			/>
 			<div className="sr-only" role="status">
-				{active
-					? `${windowDefinitions.find((definition) => definition.id === active)?.title} window active`
-					: "Desktop ready"}
+				{activeTitle ? `${activeTitle} window active` : "Desktop ready"}
 			</div>
 		</main>
 	);

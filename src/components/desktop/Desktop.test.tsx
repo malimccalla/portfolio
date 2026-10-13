@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { windowDefinitions } from "../../data/portfolio";
+import { interests, windowDefinitions } from "../../data/portfolio";
 import Desktop from "./Desktop";
 
 let changeViewport: (matches: boolean) => void;
@@ -26,7 +26,7 @@ function open(title: string) {
 	return screen.getByRole("dialog", { name: title });
 }
 
-function taskbar() {
+function dock() {
 	return within(screen.getByRole("navigation", { name: "Open windows" }));
 }
 
@@ -68,10 +68,10 @@ describe("portfolio desktop", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Close About Me" }));
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Open About Me" })).toHaveFocus();
-		expect(taskbar().queryByRole("button")).not.toBeInTheDocument();
+		expect(dock().queryByRole("button")).not.toBeInTheDocument();
 	});
 
-	it("minimizes and restores via the taskbar without losing the window", () => {
+	it("minimizes and restores via the dock without losing the window", () => {
 		render(<Desktop />);
 		const window = open("Projects");
 		fireEvent.click(
@@ -81,14 +81,10 @@ describe("portfolio desktop", () => {
 			}),
 		);
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-		fireEvent.click(
-			taskbar().getByRole("button", { name: "Restore Projects" }),
-		);
+		fireEvent.click(dock().getByRole("button", { name: "Restore Projects" }));
 		expect(screen.getByRole("dialog", { name: "Projects" })).toBeVisible();
 		expect(screen.getByRole("heading", { name: "Projects" })).toHaveFocus();
-		fireEvent.click(
-			taskbar().getByRole("button", { name: "Minimize Projects" }),
-		);
+		fireEvent.click(dock().getByRole("button", { name: "Minimize Projects" }));
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 
@@ -99,13 +95,13 @@ describe("portfolio desktop", () => {
 		expect(Number(projects.style.zIndex)).toBeGreaterThan(
 			Number(about.style.zIndex),
 		);
-		fireEvent.click(taskbar().getByRole("button", { name: "Show About Me" }));
+		fireEvent.click(dock().getByRole("button", { name: "Show About Me" }));
 		expect(Number(about.style.zIndex)).toBeGreaterThan(
 			Number(projects.style.zIndex),
 		);
 		open("About Me");
 		expect(screen.getAllByRole("dialog")).toHaveLength(2);
-		expect(taskbar().getAllByRole("button")).toHaveLength(2);
+		expect(dock().getAllByRole("button")).toHaveLength(2);
 	});
 
 	it("activates a window by pointer interaction and keyboard focus", () => {
@@ -116,7 +112,7 @@ describe("portfolio desktop", () => {
 			within(about).getByText("Curiosity, with a defensive mindset."),
 		);
 		expect(
-			taskbar().getByRole("button", { name: "Minimize About Me" }),
+			dock().getByRole("button", { name: "Minimize About Me" }),
 		).toHaveAttribute("aria-pressed", "true");
 		act(() =>
 			within(projects).getByRole("button", { name: "Close Projects" }).focus(),
@@ -178,14 +174,14 @@ describe("portfolio desktop", () => {
 		).toBeDisabled();
 	});
 
-	it("shows one window on mobile and restores others using the taskbar", () => {
+	it("shows one window on mobile and restores others using the dock", () => {
 		render(<Desktop />);
 		act(() => changeViewport(true));
 		open("About Me");
 		open("Projects");
 		expect(screen.getAllByRole("dialog")).toHaveLength(1);
 		expect(screen.getByRole("dialog", { name: "Projects" })).toBeVisible();
-		fireEvent.click(taskbar().getByRole("button", { name: "Show About Me" }));
+		fireEvent.click(dock().getByRole("button", { name: "Show About Me" }));
 		expect(screen.getAllByRole("dialog")).toHaveLength(1);
 		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
 		act(() => changeViewport(false));
@@ -209,5 +205,59 @@ describe("portfolio desktop", () => {
 		act(() => screen.getByRole("button", { name: "Open Projects" }).focus());
 		act(() => changeViewport(true));
 		expect(screen.getByRole("heading", { name: "About Me" })).toHaveFocus();
+	});
+
+	it("selects a folder on single click like Finder", () => {
+		render(<Desktop />);
+		const icon = screen.getByRole("button", { name: "Open Projects" });
+		fireEvent.click(icon, { detail: 1 });
+		expect(icon).toHaveClass("is-selected");
+		fireEvent.pointerDown(document.querySelector(".desktop-home") as Element);
+		expect(icon).not.toHaveClass("is-selected");
+	});
+
+	it("opens, minimizes, and restores interest apps from the dock", () => {
+		render(<Desktop />);
+		const apps = within(screen.getByRole("navigation", { name: "Interests" }));
+		expect(apps.getAllByRole("button")).toHaveLength(interests.length);
+		const [first] = interests;
+		fireEvent.click(apps.getByRole("button", { name: `Open ${first.title}` }));
+		const window = screen.getByRole("dialog", { name: first.title });
+		expect(within(window).getByText(first.summary)).toBeVisible();
+		expect(dock().queryByRole("button")).not.toBeInTheDocument();
+		fireEvent.click(
+			apps.getByRole("button", { name: `Minimize ${first.title}` }),
+		);
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		fireEvent.click(
+			apps.getByRole("button", { name: `Restore ${first.title}` }),
+		);
+		fireEvent.click(
+			screen.getByRole("button", { name: `Close ${first.title}` }),
+		);
+		expect(
+			apps.getByRole("button", { name: `Open ${first.title}` }),
+		).toHaveFocus();
+	});
+
+	it("toggles window zoom from the green traffic light", () => {
+		render(<Desktop />);
+		const window = open("Contact");
+		fireEvent.click(
+			within(window).getByRole("button", { name: "Zoom Contact" }),
+		);
+		expect(window).toHaveClass("is-zoomed");
+		fireEvent.click(
+			within(window).getByRole("button", { name: "Restore size of Contact" }),
+		);
+		expect(window).not.toHaveClass("is-zoomed");
+	});
+
+	it("shows the active window title in the menu bar", () => {
+		render(<Desktop />);
+		const menuBar = document.querySelector(".menu-app-name");
+		expect(menuBar).toHaveTextContent("Finder");
+		open("Experience");
+		expect(menuBar).toHaveTextContent("Experience");
 	});
 });

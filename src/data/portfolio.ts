@@ -10,7 +10,7 @@ export const profile = {
 	resumeReady: false,
 };
 
-export type WindowId =
+export type SectionId =
 	| "about"
 	| "projects"
 	| "experience"
@@ -19,10 +19,10 @@ export type WindowId =
 	| "resume"
 	| "contact";
 
-export type IconKind = "folder" | "person" | "document" | "mail" | "shield";
+export type IconKind = "folder" | "document";
 
 export interface WindowDefinition {
-	id: WindowId;
+	id: SectionId;
 	title: string;
 	icon: IconKind;
 	description: string;
@@ -32,7 +32,7 @@ export const windowDefinitions: readonly WindowDefinition[] = [
 	{
 		id: "about",
 		title: "About Me",
-		icon: "person",
+		icon: "folder",
 		description: "The person behind the work",
 	},
 	{
@@ -68,10 +68,56 @@ export const windowDefinitions: readonly WindowDefinition[] = [
 	{
 		id: "contact",
 		title: "Contact",
-		icon: "mail",
+		icon: "folder",
 		description: "Start a conversation",
 	},
 ];
+
+export type AppGlyph = "music" | "camera" | "gamepad" | "book";
+
+export interface InterestApp {
+	id: `interest-${string}`;
+	title: string;
+	glyph: AppGlyph;
+	/** Two colours used for the app icon's gradient. */
+	colors: readonly [string, string];
+	summary: string;
+}
+
+// Placeholder dock apps for interests outside of work. Swap titles, glyphs,
+// colours, and summaries for your own.
+export const interests: readonly InterestApp[] = [
+	{
+		id: "interest-music",
+		title: "Music",
+		glyph: "music",
+		colors: ["#ff6b8b", "#f5245a"],
+		summary: "[What you listen to, play, or make]",
+	},
+	{
+		id: "interest-photos",
+		title: "Photography",
+		glyph: "camera",
+		colors: ["#ffd25e", "#ff9500"],
+		summary: "[Places you shoot, gear you use, favourite shots]",
+	},
+	{
+		id: "interest-games",
+		title: "Games",
+		glyph: "gamepad",
+		colors: ["#7ee08a", "#28a745"],
+		summary: "[Games you are playing or would recommend]",
+	},
+	{
+		id: "interest-reading",
+		title: "Reading",
+		glyph: "book",
+		colors: ["#7cc4ff", "#2f7cf6"],
+		summary: "[Books on your desk right now]",
+	},
+];
+
+export type WindowId = SectionId | InterestApp["id"];
 
 export interface PortfolioEntry {
 	title: string;

@@ -1,13 +1,17 @@
 :root {
-	color-scheme: dark;
-	--text: #e0e9ed;
-	--muted: #a3b2bc;
-	--accent: #9acdb8;
-	--border: #b0c8cc21;
-	--mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-	font-family: Inter, "Segoe UI", Arial, sans-serif;
+	color-scheme: light;
+	--text: #1d1d1f;
+	--muted: #6e6e73;
+	--accent: #0a66d6;
+	--border: #0000001a;
+	--wallpaper: #1f5fbf;
+	--mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+	font-family:
+		-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Inter,
+		"Segoe UI", Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
 	color: var(--text);
-	background: #10191f;
+	background: var(--wallpaper);
 	font-synthesis: none;
 }
 * {
@@ -35,12 +39,12 @@ a {
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
-	outline: 2px solid #c2ebd9;
+	outline: 3px solid #7fb4ff;
 	outline-offset: 3px;
 }
 code {
 	font: 0.8em var(--mono);
-	background: #ffffff08;
+	background: #0000000d;
 	padding: 3px 5px;
 	border-radius: 3px;
 }
@@ -62,7 +66,7 @@ svg {
 	position: absolute;
 	inset: 0;
 	z-index: 20;
-	background: #10191f;
+	background: #fff;
 	padding: 30px;
 	overflow: auto;
 }

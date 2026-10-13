@@ -1,11 +1,12 @@
 import {
+	interests,
 	type PortfolioEntry,
 	profile,
 	projects,
 	type WindowId,
 	writeups,
 } from "../../data/portfolio";
-import Icon from "./Icon";
+import Icon, { AppIcon } from "./Icon";
 
 function PlaceholderNotice() {
 	return (
@@ -82,14 +83,36 @@ export default function WindowContent({
 	id: WindowId;
 	onOpen: (id: WindowId) => void;
 }) {
+	const interest = interests.find((app) => app.id === id);
+	if (interest) {
+		return (
+			<>
+				<PlaceholderNotice />
+				<div className="interest-heading">
+					<span className="interest-icon">
+						<AppIcon app={interest} />
+					</span>
+					<div>
+						<span className="eyebrow">OUTSIDE OF WORK</span>
+						<h3>{interest.title}</h3>
+					</div>
+				</div>
+				<p className="lead">{interest.summary}</p>
+				<p>
+					[This app is a placeholder. Fill it with photos, links, playlists, or
+					anything else that shows this side of you.]
+				</p>
+			</>
+		);
+	}
 	return (
 		<>
 			<PlaceholderNotice />
 			{id === "about" && (
 				<>
 					<div className="profile-heading">
-						<div className="profile-avatar">
-							<Icon kind="shield" />
+						<div className="profile-avatar" aria-hidden="true">
+							&gt;_
 						</div>
 						<div>
 							<span className="eyebrow">HELLO, I'M</span>
@@ -188,7 +211,9 @@ export default function WindowContent({
 			{id === "resume" && (
 				<>
 					<div className="resume-preview">
-						<Icon kind="document" />
+						<span className="resume-icon">
+							<Icon kind="document" />
+						</span>
 						<span className="eyebrow">RESUME / PDF</span>
 						<h3>{profile.name}</h3>
 						<p>[A concise summary of your skills and experience]</p>
