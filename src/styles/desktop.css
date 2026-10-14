@@ -221,8 +221,8 @@ img.app-icon.has-tile {
 
 /* ---------- Windows ---------- */
 .desktop-window {
-	--w: min(700px, calc(100% - 32px));
-	--h: min(580px, calc(100% - 32px));
+	--w: min(680px, calc(100% - 32px));
+	--h: min(620px, calc(100% - 32px));
 	--left: calc(clamp(16px, 9vw, 180px) + var(--window-offset));
 	--top: calc(16px + var(--window-offset));
 	position: absolute;
@@ -234,7 +234,7 @@ img.app-icon.has-tile {
 	flex-direction: column;
 	overflow: hidden;
 	pointer-events: auto;
-	border-radius: 12px;
+	border-radius: 20px;
 	background: #fff;
 	color: var(--text);
 	border: 1px solid #00000038;
@@ -305,8 +305,8 @@ img.app-icon.has-tile {
 	z-index: 1;
 }
 .traffic-light {
-	width: 12px;
-	height: 12px;
+	width: 15px;
+	height: 15px;
 	padding: 0;
 	border-radius: 50%;
 	border: 0.5px solid #0000001f;
@@ -326,8 +326,8 @@ img.app-icon.has-tile {
 	background: #dcdcdc;
 }
 .traffic-light svg {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 	stroke: #0000008c;
 	stroke-width: 1.4;
 	stroke-linecap: round;
@@ -353,37 +353,32 @@ img.app-icon.has-tile {
 	font-size: 14px;
 	line-height: 1.55;
 }
-.window-footer {
-	flex: none;
-	display: flex;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 5px 14px;
-	font-size: 11px;
-	color: var(--muted);
-	background: #f6f6f6;
-	border-top: 1px solid #e2e2e2;
-}
 .window-resize {
 	position: absolute;
+	width: 13px;
+	height: 13px;
+	touch-action: none;
+	z-index: 2;
+}
+.window-resize-nw {
+	left: 0;
+	top: 0;
+	cursor: nwse-resize;
+}
+.window-resize-ne {
+	right: 0;
+	top: 0;
+	cursor: nesw-resize;
+}
+.window-resize-sw {
+	left: 0;
+	bottom: 0;
+	cursor: nesw-resize;
+}
+.window-resize-se {
 	right: 0;
 	bottom: 0;
-	width: 18px;
-	height: 18px;
-	display: grid;
-	place-items: center;
 	cursor: nwse-resize;
-	touch-action: none;
-	color: #00000059;
-}
-/* biome-ignore lint/style/noDescendingSpecificity: The resize grip never shares the traffic-light selectors. */
-.window-resize svg {
-	width: 11px;
-	height: 11px;
-	stroke: currentColor;
-	stroke-width: 1.2;
-	stroke-linecap: round;
-	fill: none;
 }
 .desktop-window.is-zoomed .window-resize {
 	display: none;
@@ -427,6 +422,17 @@ img.app-icon.has-tile {
 	max-width: 100%;
 	height: auto;
 	border-radius: 8px;
+}
+.professional-statement > p:first-child {
+	float: right;
+	margin: 0 0 12px 20px;
+	line-height: 0;
+}
+.professional-statement > p:first-child img {
+	width: 100px;
+}
+.professional-statement hr {
+	clear: both;
 }
 .markdown-content pre {
 	max-width: 100%;
@@ -786,9 +792,6 @@ img.app-icon.has-tile {
 		padding: 18px;
 	}
 	.window-resize {
-		display: none;
-	}
-	.keyboard-hint {
 		display: none;
 	}
 	.dock {

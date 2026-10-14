@@ -16,12 +16,10 @@ const windowApplications = [
 	...windowDefinitions.map((definition) => ({
 		id: definition.id,
 		title: definition.title,
-		subtitle: definition.description,
 	})),
 	...apps.map((app) => ({
 		id: app.id,
 		title: app.title,
-		subtitle: app.category,
 	})),
 ];
 
@@ -148,7 +146,6 @@ export default function Desktop({
 								key={window.id}
 								id={app.id}
 								title={app.title}
-								subtitle={app.subtitle}
 								active={active === window.id}
 								hidden={window.minimized || (mobile && active !== window.id)}
 								stack={index + 1}
@@ -160,9 +157,7 @@ export default function Desktop({
 								}
 							>
 								<WindowContent
-									id={window.id}
 									content={content[window.id.replace(/^app-/, "")]}
-									onOpen={open}
 								/>
 							</DesktopWindow>
 						);

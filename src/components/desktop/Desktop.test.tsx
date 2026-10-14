@@ -189,16 +189,6 @@ describe("portfolio desktop", () => {
 		}
 	});
 
-	it("opens the resume from the about window's interactive action", () => {
-		render(<Desktop />);
-		const window = open("about-me.md");
-		fireEvent.click(
-			within(window).getByRole("button", { name: "Open resume" }),
-		);
-		expect(screen.getByRole("dialog", { name: "Resume" })).toBeVisible();
-		expect(screen.getByRole("heading", { name: "Resume" })).toHaveFocus();
-	});
-
 	it("reports a missing window slot instead of silently showing an empty window", () => {
 		render(<DesktopIsland />);
 		const window = open("Projects");
@@ -297,11 +287,11 @@ describe("portfolio desktop", () => {
 		expect(window).not.toHaveClass("is-zoomed");
 	});
 
-	it("resizes a window by dragging the corner grip", () => {
+	it("resizes a window by dragging the bottom-right corner", () => {
 		render(<Desktop />);
 		const window = screen.getByRole("dialog", { name: "about-me.md" });
 		stubLayout(window, new DOMRect(100, 50, 700, 580));
-		const grip = window.querySelector(".window-resize") as HTMLElement;
+		const grip = window.querySelector(".window-resize-se") as HTMLElement;
 
 		fireEvent.pointerDown(grip, { button: 0, clientX: 800, clientY: 630 });
 		fireEvent.pointerMove(grip, { clientX: 900, clientY: 700 });
@@ -314,11 +304,28 @@ describe("portfolio desktop", () => {
 		expect(window.style.getPropertyValue("--window-y")).toBe("50px");
 	});
 
+	it("resizes from the top-left corner by moving the origin", () => {
+		render(<Desktop />);
+		const window = screen.getByRole("dialog", { name: "about-me.md" });
+		stubLayout(window, new DOMRect(100, 50, 700, 580));
+		const grip = window.querySelector(".window-resize-nw") as HTMLElement;
+
+		fireEvent.pointerDown(grip, { button: 0, clientX: 100, clientY: 50 });
+		fireEvent.pointerMove(grip, { clientX: 60, clientY: 30 });
+		fireEvent.pointerUp(grip);
+
+		expect(window.style.getPropertyValue("--w")).toBe("740px");
+		expect(window.style.getPropertyValue("--h")).toBe("600px");
+		// The bottom-right corner stays anchored.
+		expect(window.style.getPropertyValue("--window-x")).toBe("60px");
+		expect(window.style.getPropertyValue("--window-y")).toBe("30px");
+	});
+
 	it("keeps a resized window within its minimum size and the desktop bounds", () => {
 		render(<Desktop />);
 		const window = screen.getByRole("dialog", { name: "about-me.md" });
 		stubLayout(window, new DOMRect(100, 50, 700, 580));
-		const grip = window.querySelector(".window-resize") as HTMLElement;
+		const grip = window.querySelector(".window-resize-se") as HTMLElement;
 
 		fireEvent.pointerDown(grip, { button: 0, clientX: 800, clientY: 630 });
 		fireEvent.pointerMove(grip, { clientX: 0, clientY: 0 });

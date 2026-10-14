@@ -9,7 +9,6 @@ import {
 interface Props {
 	id: string;
 	title: string;
-	subtitle: string;
 	active: boolean;
 	hidden: boolean;
 	stack: number;
@@ -30,12 +29,14 @@ interface Size {
 	height: number;
 }
 
+type Corner = "nw" | "ne" | "sw" | "se";
+
 const MIN_SIZE: Size = { width: 360, height: 280 };
+const CORNERS: Corner[] = ["nw", "ne", "sw", "se"];
 
 export default function DesktopWindow({
 	id,
 	title,
-	subtitle,
 	active,
 	hidden,
 	stack,
@@ -51,7 +52,12 @@ export default function DesktopWindow({
 	const drag = useRef<{ pointer: Point; start: Point; bounds: DOMRect }>(
 		undefined,
 	);
-	const resize = useRef<{ pointer: Point; start: Size; max: Size }>(undefined);
+	const resize = useRef<{
+		pointer: Point;
+		corner: Corner;
+		start: DOMRect;
+		bounds: Size;
+	}>(undefined);
 
 	const style: CSSProperties & Record<`--${string}`, string> = {
 		zIndex: stack,
@@ -108,25 +114,29 @@ export default function DesktopWindow({
 		});
 	}
 
-	function startResize(event: PointerEvent<HTMLElement>) {
+	function startResize(event: PointerEvent<HTMLElement>, corner: Corner) {
 		if (zoomed || event.button !== 0) return;
 		const windowElement = event.currentTarget.parentElement;
 		const layer = windowElement?.parentElement;
 		if (!windowElement || !layer) return;
 		const box = windowElement.getBoundingClientRect();
 		const bounds = layer.getBoundingClientRect();
-		// Pin the current position so growing the window cannot shift its origin.
+		const start = new DOMRect(
+			box.left - bounds.left,
+			box.top - bounds.top,
+			box.width,
+			box.height,
+		);
+		// Pin the current position so resizing cannot shift the anchored corner.
 		setOrigin(
 			(value) =>
-				value ?? { x: box.left - bounds.left, y: box.top - bounds.top },
+				value ?? { x: Math.round(start.left), y: Math.round(start.top) },
 		);
 		resize.current = {
 			pointer: { x: event.clientX, y: event.clientY },
-			start: { width: box.width, height: box.height },
-			max: {
-				width: bounds.right - box.left,
-				height: bounds.bottom - box.top,
-			},
+			corner,
+			start,
+			bounds: { width: bounds.width, height: bounds.height },
 		};
 		event.currentTarget.setPointerCapture?.(event.pointerId);
 	}
@@ -134,19 +144,27 @@ export default function DesktopWindow({
 	function moveResize(event: PointerEvent<HTMLElement>) {
 		const current = resize.current;
 		if (!current) return;
+		const { bounds, corner, pointer, start } = current;
+		const west = corner === "nw" || corner === "sw";
+		const north = corner === "nw" || corner === "ne";
 		const clamp = (value: number, min: number, max: number) =>
 			Math.round(Math.min(Math.max(value, min), Math.max(min, max)));
-		setSize({
-			width: clamp(
-				current.start.width + event.clientX - current.pointer.x,
-				MIN_SIZE.width,
-				current.max.width,
-			),
-			height: clamp(
-				current.start.height + event.clientY - current.pointer.y,
-				MIN_SIZE.height,
-				current.max.height,
-			),
+		const dx = event.clientX - pointer.x;
+		const dy = event.clientY - pointer.y;
+		const width = clamp(
+			start.width + (west ? -dx : dx),
+			MIN_SIZE.width,
+			west ? start.right : bounds.width - start.left,
+		);
+		const height = clamp(
+			start.height + (north ? -dy : dy),
+			MIN_SIZE.height,
+			north ? start.bottom : bounds.height - start.top,
+		);
+		setSize({ width, height });
+		setOrigin({
+			x: Math.max(0, Math.round(west ? start.right - width : start.left)),
+			y: Math.max(0, Math.round(north ? start.bottom - height : start.top)),
 		});
 	}
 
@@ -224,27 +242,22 @@ export default function DesktopWindow({
 				</h2>
 			</header>
 			<div className="window-body">{children}</div>
-			<footer className="window-footer">
-				<span>{subtitle}</span>
-				<span className="keyboard-hint">esc to close</span>
-			</footer>
-			<div
-				className="window-resize"
-				aria-hidden="true"
-				onPointerDown={startResize}
-				onPointerMove={moveResize}
-				onPointerUp={() => {
-					resize.current = undefined;
-				}}
-				onPointerCancel={() => {
-					resize.current = undefined;
-				}}
-				onDoubleClick={() => setSize(undefined)}
-			>
-				<svg viewBox="0 0 12 12" aria-hidden="true">
-					<path d="M10.5 4.5v6h-6M10.5 8.5v2h-2" />
-				</svg>
-			</div>
+			{CORNERS.map((corner) => (
+				<div
+					key={corner}
+					className={`window-resize window-resize-${corner}`}
+					aria-hidden="true"
+					onPointerDown={(event) => startResize(event, corner)}
+					onPointerMove={moveResize}
+					onPointerUp={() => {
+						resize.current = undefined;
+					}}
+					onPointerCancel={() => {
+						resize.current = undefined;
+					}}
+					onDoubleClick={() => setSize(undefined)}
+				/>
+			))}
 		</section>
 	);
 }
