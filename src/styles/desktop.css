@@ -221,7 +221,7 @@ img.app-icon.has-tile {
 
 /* ---------- Windows ---------- */
 .desktop-window {
-	--w: min(680px, calc(100% - 32px));
+	--w: min(620px, calc(100% - 32px));
 	--h: min(620px, calc(100% - 32px));
 	--left: calc(clamp(16px, 9vw, 180px) + var(--window-offset));
 	--top: calc(16px + var(--window-offset));
